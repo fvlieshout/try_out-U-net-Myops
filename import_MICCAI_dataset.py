@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import os
+import shutil
 import requests
 import tarfile
 import nrrd
@@ -12,7 +13,9 @@ from skimage.transform import resize
 from matplotlib import cm
 import cv2
 
-DATA_DIR_NAME = 'MICCAI-STACOM2012'
+DATASET_DEST = 'H:\\Deep_Risk_Floor\\Modellen\\Datasets'
+DATASET_FOLDER = 'MICCAI-STACOM2012'
+DATA_DIR_NAME = os.path.join(DATASET_DEST, DATASET_FOLDER)
 
 def import_data():
     if not os.path.isdir(DATA_DIR_NAME):
@@ -20,7 +23,11 @@ def import_data():
         response = requests.get(url, stream=True)
         file = tarfile.open(fileobj=response.raw, mode="r|gz")
         file.extractall(path=".")
+        cur_dir = os.getcwd()
+        cur_path = os.path.join(cur_dir, DATASET_FOLDER)
+        shutil.move(cur_path, DATASET_DEST)
 
+import_data()
 img_data, img_head = nrrd.read(os.path.join(DATA_DIR_NAME, 'human', 'training', 'p4_de.nrrd'))
 print(img_data.shape)
 # print(img_data)

@@ -5,6 +5,7 @@
 
 #personal
 *.tar.gz
+*_logs/
 
 # User-specific files
 *.rsuser

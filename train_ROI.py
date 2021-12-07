@@ -6,9 +6,13 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 import os
 import time
 import argparse
+import random
 from criterions import L1loss
 from bounding_box_model import BB_model
 from load_data import load_data
+
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+print("Device", device)
 
 
 class ROIModel(pl.LightningModule):
@@ -170,6 +174,14 @@ def evaluate(trainer, model, test_dataloader, val_dataloader, loss_function):
 
     return test_accuracy, val_accuracy
 
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+
 if __name__ == '__main__':
     # Feel free to add more argument parameters
     parser = argparse.ArgumentParser(
@@ -204,7 +216,7 @@ if __name__ == '__main__':
                         help='Max number of epochs')
     parser.add_argument('--seed', default=42, type=int,
                         help='Seed to use for reproducing results')
-    parser.add_argument('--num_workers', default=0, type=int,
+    parser.add_argument('--num_workers', default=4, type=int,
                         help='Number of workers to use in the data loaders. To have a truly deterministic run, this has to be 0.')
     parser.add_argument('--log_dir', default='ROI_logs', type=str,
                         help='Directory where the PyTorch Lightning logs should be created.')

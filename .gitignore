@@ -6,6 +6,8 @@
 #personal
 *.tar.gz
 *_logs/
+AUMC_data/
+output/
 
 # User-specific files
 *.rsuser

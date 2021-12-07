@@ -9,7 +9,8 @@ from skimage.transform import resize
 from matplotlib import cm
 import SimpleITK as sitk
 
-ORIGINAL_DIR_NAME = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing'
+# ORIGINAL_DIR_NAME = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing'
+ORIGINAL_DIR_NAME = 'AUMC_data'
 NIFTI_SUFFIX = 'LGE_niftis'
 MYO_MASK_SUFFIX = 'myo'
 AANKLEURING_MASK_SUFFIX = 'aankleuring'
@@ -33,9 +34,13 @@ def read_in_AUMC_data(mode):
     aankleuring_masks = []
 
     for i, (nifti_path, myo_mask_path, aankleuring_mask_path) in tqdm(enumerate(zip(data_paths, myo_mask_paths, aankleuring_mask_paths)), total=no_samples):
-        # print(pet_path)
-        pat_id = nifti_path.split('\\')[-1].split('_')[0]
-        pat_ids.append(pat_id)
+        print(nifti_path)
+        if '\\' in nifti_path:
+            pat_id = nifti_path.split('\\')[-1].split('_')[0]
+            pat_ids.append(pat_id)
+        elif '/' in nifti_path:
+            pat_id = nifti_path.split('/')[-1].split('_')[0]
+            pat_ids.append(pat_id)
         LGE_img = sitk.GetArrayFromImage(sitk.ReadImage(nifti_path))
         myo_mask = sitk.GetArrayFromImage(sitk.ReadImage(myo_mask_path))
         aankleuring_mask = sitk.GetArrayFromImage(sitk.ReadImage(aankleuring_mask_path))
@@ -163,21 +168,33 @@ def compute_bounding_box(mask_images):
         bouding_box_coordinates.append((upper_bound, lower_bound, left_bound, right_bound))
     return bouding_box_coordinates
 
-def plot_bounding_box(LGE_img, myo_mask, slices, box_values=None):
-    for slice in slices:
-        LGE_slice = LGE_img[slice, :, :]
-        myo_slice = myo_mask[slice, :, :]
-        ymin, ymax, xmin, xmax = box_values
-        fig, (ax1, ax2) = plt.subplots(1,2, figsize=[10,20])
-        ax1.imshow(LGE_slice)
-        if box_values is not None:
-            box = patches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, linewidth=3, edgecolor='y', facecolor='none')
-            ax1.add_patch(box)
-        ax2.imshow(myo_slice)
-        if box_values is not None:
-            box = patches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, linewidth=3, edgecolor='y', facecolor='none')
-            ax2.add_patch(box)
-        plt.show()
+def plot_bounding_box(LGE_img, myo_mask=None, slices=[6], box_values=None):
+    if myo_mask not None:
+        for slice in slices:
+            LGE_slice = LGE_img[slice, :, :]
+            myo_slice = myo_mask[slice, :, :]
+            ymin, ymax, xmin, xmax = box_values
+            fig, (ax1, ax2) = plt.subplots(1,2, figsize=[10,20])
+            ax1.imshow(LGE_slice)
+            if box_values is not None:
+                box = patches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, linewidth=3, edgecolor='y', facecolor='none')
+                ax1.add_patch(box)
+            ax2.imshow(myo_slice)
+            if box_values is not None:
+                box = patches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, linewidth=3, edgecolor='y', facecolor='none')
+                ax2.add_patch(box)
+            plt.show()
+    else:
+        for slice in slices:
+            LGE_slice = LGE_img[slice, :, :]
+            myo_slice = myo_mask[slice, :, :]
+            ymin, ymax, xmin, xmax = box_values
+            fig, ax1 = plt.subplots(1,1, figsize=[10,20])
+            ax1.imshow(LGE_slice)
+            if box_values is not None:
+                box = patches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, linewidth=3, edgecolor='y', facecolor='none')
+                ax1.add_patch(box)
+            plt.show()
 
 def get_data_paths(data_dir, modality=None):
     """

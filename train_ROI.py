@@ -1,4 +1,5 @@
 from datetime import datetime
+import sys
 import torch
 import torch.nn as nn
 import numpy as np
@@ -46,6 +47,8 @@ class ROIModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         # Make use of the forward function, and add logging statements
         LGE_image, _, _, bb_coordinates = batch
+        LGE_image.to(device)
+        bb_coordinates.to(device)
         output = self.forward(LGE_image.float())
         loss = self.loss_function(output, bb_coordinates)
         loss_name = f"train_{str(self.loss_function_string)}_loss"
@@ -56,6 +59,8 @@ class ROIModel(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         # Make use of the forward function, and add logging statements
         LGE_image, _, _, bb_coordinates = batch
+        LGE_image.to(device)
+        bb_coordinates.to(device)
         output = self.forward(LGE_image.float())
         loss = self.loss_function(output, bb_coordinates)
         loss_name = f"val_{str(self.loss_function_string)}_loss"
@@ -65,6 +70,8 @@ class ROIModel(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         # Make use of the forward function, and add logging statements
         LGE_image, _, _, bb_coordinates = batch
+        LGE_image.to(device)
+        bb_coordinates.to(device)
         output = self.forward(LGE_image.float())
         loss = self.loss_function(output, bb_coordinates)
         loss_name = f"test_{str(self.loss_function_string)}_loss"
@@ -131,6 +138,7 @@ def train(args):
     # Create model
     pl.seed_everything(args.seed)  # To be reproducible        
     model = ROIModel(model_type=args.model, loss_function_string=args.loss_function, lr=args.lr)
+    model.to(device)
     trainer.fit(model, train_loader, val_loader)
     
     #Testing

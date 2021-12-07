@@ -3,6 +3,8 @@ import torchvision.models as models
 import torch.nn as nn
 import numpy as np
 
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+
 class BB_model(nn.Module):
     def __init__(self) -> None:
         super(BB_model, self).__init__()
@@ -23,7 +25,7 @@ class BB_model(nn.Module):
             x = self.relu(x)
             x = nn.AdaptiveAvgPool2d((1,1))(x)
             stacked_x[i] = torch.squeeze(x)
-        x = torch.unsqueeze(torch.mean(stacked_x, dim=0), 0)
+        x = torch.unsqueeze(torch.mean(stacked_x, dim=0), 0).to(device)
         x = self.bb_layer(x)
         return x
         

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#SBATCH --gres=gpu:1
+#SBATCH --job-name=deep_risk_job
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=6
+#SBATCH --time=1:00:00
+#SBATCH --mem=32000M
+#SBATCH --array=1
+#SBATCH --output=job_outputs/ROI_%A_%a.out
+
+
+# Your job starts in the directory where you call sbatch
+cd $HOME/ATCS_group1
+
+# Activate your environment
+source activate deep_risk
+
+PARAMETERS_FILE=parameters.txt
+
+srun python -u train.py $(head -$SLURM_ARRAY_TASK_ID $PARAMETERS_FILE | tail -1)

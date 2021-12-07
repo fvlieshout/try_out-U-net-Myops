@@ -8,7 +8,6 @@ from mpl_toolkits.mplot3d import axes3d
 from skimage.transform import resize
 from matplotlib import cm
 import SimpleITK as sitk
-import cv2
 
 ORIGINAL_DIR_NAME = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing'
 NIFTI_SUFFIX = 'LGE_niftis'

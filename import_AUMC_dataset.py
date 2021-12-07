@@ -1,12 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 import csv
-import glob
-import torch
 import os
-import requests
-import tarfile
-import nrrd
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib import pyplot as plt

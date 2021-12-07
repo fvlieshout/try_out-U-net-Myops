@@ -1,5 +1,4 @@
 import torch
-from torchgeometry.losses import DiceLoss
 import torch.nn.functional as f
 
 class Diceloss(torch.nn.Module):

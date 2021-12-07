@@ -2,8 +2,6 @@ import numpy as np
 from tqdm import tqdm
 import csv
 import os
-import matplotlib
-matplotlib.use("TkAgg")
 from matplotlib import pyplot as plt
 from matplotlib import patches
 from mpl_toolkits.mplot3d import axes3d

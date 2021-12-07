@@ -7,11 +7,11 @@
 #SBATCH --time=1:00:00
 #SBATCH --mem=32000M
 #SBATCH --array=1
-#SBATCH --output=job_outputs/ROI_%A_%a.out
+#SBATCH --output=output/ROI_%A_%a.out
 
 
 # Your job starts in the directory where you call sbatch
-cd $HOME/ATCS_group1
+cd $HOME/deep_risk_models/try_out-U-net-Myops
 
 # Activate your environment
 source activate deep_risk

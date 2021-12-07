@@ -1,3 +1,4 @@
+from datetime import datetime
 import torch
 import torch.nn as nn
 import numpy as np
@@ -220,10 +221,16 @@ if __name__ == '__main__':
                         help='Number of workers to use in the data loaders. To have a truly deterministic run, this has to be 0.')
     parser.add_argument('--log_dir', default='ROI_logs', type=str,
                         help='Directory where the PyTorch Lightning logs should be created.')
+    parser.add_argument('--print_dir', default='output', type=str,
+                        help='Directory where the printing files should be created.')
     parser.add_argument('--progress_bar', action='store_true',
                         help=('Use a progress bar indicator for interactive experimentation. '
                               'Not to be used in conjuction with SLURM jobs'))
 
     args = parser.parse_args()
 
+    #write prints to file
+    file_name = f'train_ROI_{datetime.now()}.txt'
+    sys.stdout = open(os.path.join(args.print_dir, file_name), "w")
     train(args)
+    sys.stdout.close()

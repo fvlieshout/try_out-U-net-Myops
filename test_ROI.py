@@ -10,7 +10,6 @@ import argparse
 import sys
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-print("Device", device)
 
 def test(args, plot=None):
     loss_function = L1loss()
@@ -19,22 +18,26 @@ def test(args, plot=None):
                             num_workers=args.num_workers,
                             only_test=True)
     model = ROIModel.load_from_checkpoint(args.checkpoint_path)
+    model.to(device)
     model.eval()
 
     with torch.no_grad():
         for i, test_data in enumerate(test_loader):
             LGE_image, _, _, bb_coordinates = test_data
+            LGE_image = LGE_image.to(device)
+            bb_coordinates = bb_coordinates.to(device)
             output = model.forward(LGE_image.float())
             loss = loss_function(output, bb_coordinates)
             print('Test loss:', loss)
             if plot is not None:
                 if plot == 'save':
                     save_dir = os.path.join('.', args.checkpoint_path.split('/')[0], args.checkpoint_path.split('/')[1], args.checkpoint_path.split('/')[2], 'test_imgs')
+                    print(save_dir)
                     os.makedirs(save_dir, exist_ok=True)
                     file_name = os.path.join(save_dir, f"{args.checkpoint_path.split('/')[4].split('.')[0]}_[{i}]")
                 else:
                     file_name = None
-                plot_bounding_box(LGE_image, myo_mask=None, slices=[5], pred_box_values=output.cpu().detach().numpy(), true_box_values=bb_coordinates.cpu().detach().numpy(), plot=plot, model_name=file_name)
+                plot_bounding_box(LGE_image.cpu().detach().numpy(), myo_mask=None, slices=[5], pred_box_values=output.cpu().detach().numpy(), true_box_values=bb_coordinates.cpu().detach().numpy(), plot=plot, model_name=file_name)
 
 if __name__ == '__main__':
     # Feel free to add more argument parameters
@@ -64,11 +67,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     #write prints to file
-    file_name = f'test_ROI_{datetime.now()}.txt'
-    if str(device) == 'cuda:0':
-        sys.stdout = open(os.path.join(args.print_dir, file_name), "w")
-    else:
-        file_name = file_name.replace(':', ';')
-        sys.stdout = open(os.path.join('.', args.print_dir, file_name), "w")
+    log_dir = args.checkpoint_path.split('/')[0]
+    version_nr = int(args.checkpoint_path.split('/')[2].split('_')[-1])
+    file_name = f'test_ROI_version_{version_nr}.txt'
+    first_path = os.path.join(log_dir, 'lightning_logs', file_name)
+    second_path = os.path.join(log_dir, 'lightning_logs', f"version_{version_nr}", file_name)
+    sys.stdout = open(first_path, "w")
     test(args, plot='save')
     sys.stdout.close()
+    os.rename(first_path, second_path)

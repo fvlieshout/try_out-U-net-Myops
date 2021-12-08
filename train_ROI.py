@@ -9,7 +9,7 @@ import os
 import time
 import argparse
 import random
-from criterions import L1loss
+from criterions import L1loss, MSEloss, weightedMSEloss
 from bounding_box_model import BB_model
 from load_data import load_data
 
@@ -28,7 +28,9 @@ class ROIModel(pl.LightningModule):
         elif loss_function_string == 'l1':
             self.loss_function = L1loss()
         elif loss_function_string == 'MSE':
-            self.loss_function = nn.MSELoss()
+            self.loss_function = MSEloss()
+        elif loss_function_string == 'weightedMSE':
+            self.loss_function = weightedMSEloss()
         else:
             raise ValueError(f"Loss function {loss_function_string} not known")
 
@@ -49,7 +51,7 @@ class ROIModel(pl.LightningModule):
         LGE_image.to(device)
         bb_coordinates.to(device)
         output = self.forward(LGE_image.float())
-        loss = self.loss_function(output, bb_coordinates)
+        loss = self.loss_function(output, bb_coordinates, device=device)
         loss_name = f"train_{str(self.loss_function_string)}_loss"
         self.log(loss_name, loss, on_step=False, on_epoch=True)
         print('Train loss:', loss)
@@ -61,7 +63,7 @@ class ROIModel(pl.LightningModule):
         LGE_image.to(device)
         bb_coordinates.to(device)
         output = self.forward(LGE_image.float())
-        loss = self.loss_function(output, bb_coordinates)
+        loss = self.loss_function(output, bb_coordinates, device=device)
         loss_name = f"val_{str(self.loss_function_string)}_loss"
         self.log(loss_name, loss, on_step=False, on_epoch=True)
         print('Validation loss:', loss)
@@ -72,7 +74,7 @@ class ROIModel(pl.LightningModule):
         LGE_image.to(device)
         bb_coordinates.to(device)
         output = self.forward(LGE_image.float())
-        loss = self.loss_function(output, bb_coordinates)
+        loss = self.loss_function(output, bb_coordinates, device=device)
         loss_name = f"test_{str(self.loss_function_string)}_loss"
         self.log(loss_name, loss, on_step=False, on_epoch=True)
     
@@ -224,7 +226,7 @@ if __name__ == '__main__':
     # Optimizer hyperparameters
     parser.add_argument('--loss_function', default='l1', type=str,
                         help='What loss funciton to use for the segmentation',
-                        choices=['l1', 'MSE'])
+                        choices=['l1', 'MSE', 'weightedMSE'])
     parser.add_argument('--lr', default=1e-3, type=float,
                         help='Learning rate to use')
     parser.add_argument('--batch_size', default=1, type=int,
@@ -262,7 +264,7 @@ if __name__ == '__main__':
     #     sys.stdout = open(os.path.join('.', args.print_dir, file_name), "w")
     sys.stdout = open(first_path, "w")
     print(f"Dataset: {args.dataset} | model: {args.model} | loss_function:{args.loss_function} | lr: {args.lr} | \
-            batch_size: {args.batch_size} | epochs: {args.epochs} | seed: {args.seed} | version_no: {version_nr}")
+        batch_size: {args.batch_size} | epochs: {args.epochs} | seed: {args.seed} | version_no: {version_nr}")
     train(args)
     sys.stdout.close()
     os.rename(first_path, second_path)

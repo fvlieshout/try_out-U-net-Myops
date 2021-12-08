@@ -16,5 +16,32 @@ class Diceloss(torch.nn.Module):
 class L1loss(torch.nn.Module):
     def init(self):
         super(L1loss, self).init()
-    def forward(self, pred, target):
-       return f.l1_loss(pred, target).sum()
+    def forward(self, pred, target, device=None):
+        loss = f.l1_loss(pred, target, reduction='none')
+        return loss.sum()
+
+class MSEloss(torch.nn.Module):
+    def init(self):
+        super(MSEloss, self).init()
+    def forward(self, pred, target, device=None):
+        loss = f.mse_loss(pred, target, reduction='none')
+        return loss.sum()
+
+class weightedMSEloss(torch.nn.Module):
+    def init(self):
+        super(weightedMSEloss, self).init()
+    def forward(self, pred, target, device=None):
+        weights = torch.Tensor([[1.0,1.0,1.0,1.0]], device=device)
+        ymin_pred, ymax_pred, xmin_pred, xmax_pred = pred.squeeze()
+        ymin_real, ymax_real, xmin_real, xmax_real = target.squeeze()
+        if ymin_real-ymin_pred < 0:
+            weights[:,0] = 2.0
+        if ymax_pred-ymax_real < 0:
+            weights[:,1] = 2.0
+        if xmin_real-xmin_pred < 0:
+            weights[:,2] = 2.0
+        if xmax_pred-xmax_real < 0:
+            weights[:,3] = 2.0
+        unweighted_loss = f.mse_loss(pred, target, reduction='none')
+        weighted_loss = torch.mul(unweighted_loss, weights)
+        return weighted_loss.sum()

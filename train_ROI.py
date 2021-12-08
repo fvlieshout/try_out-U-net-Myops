@@ -9,7 +9,7 @@ import os
 import time
 import argparse
 import random
-from criterions import L1loss, MSEloss, weightedMSEloss
+from criterions import L1loss, MSEloss, WeightedMSEloss, IoUloss
 from bounding_box_model import BB_model
 from load_data import load_data
 
@@ -30,7 +30,11 @@ class ROIModel(pl.LightningModule):
         elif loss_function_string == 'MSE':
             self.loss_function = MSEloss()
         elif loss_function_string == 'weightedMSE':
-            self.loss_function = weightedMSEloss()
+            self.loss_function = WeightedMSEloss()
+        elif loss_function_string == 'iou':
+            self.loss_function = IoUloss(generalized=False)
+        elif loss_function_string == 'giou':
+            self.loss_function = IoUloss(generalized=True)
         else:
             raise ValueError(f"Loss function {loss_function_string} not known")
 

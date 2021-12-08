@@ -201,6 +201,7 @@ def plot_bounding_box(LGE_img, myo_mask=None, slices=[6], pred_box_values=None, 
             if plot == 'save':
                 file_name = model_name + '.png'
                 plt.savefig(file_name)
+                print('Image saved')
     else:
         for slice in slices:
             LGE_slice = LGE_img[slice, :, :]

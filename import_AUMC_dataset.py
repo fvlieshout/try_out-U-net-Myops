@@ -182,6 +182,7 @@ def plot_bounding_box(LGE_img, myo_mask=None, slices=[6], pred_box_values=None, 
             LGE_slice = LGE_img[slice, :, :]
             myo_slice = myo_mask[slice, :, :]
             fig, (ax1, ax2) = plt.subplots(1,2, figsize=[10,20])
+            plt.axis('off')
             ax1.imshow(LGE_slice)
             ax2.imshow(myo_slice)
             if true_box_values is not None:
@@ -200,7 +201,7 @@ def plot_bounding_box(LGE_img, myo_mask=None, slices=[6], pred_box_values=None, 
                 plt.show()
             if plot == 'save':
                 file_name = model_name + '.png'
-                plt.savefig(file_name)
+                plt.savefig(file_name, bbox_inches='tight', pad_inches=0)
                 print('Image saved')
     else:
         for slice in slices:

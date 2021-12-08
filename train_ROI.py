@@ -49,12 +49,13 @@ class ROIModel(pl.LightningModule):
         # Make use of the forward function, and add logging statements
         LGE_image, _, _, bb_coordinates = batch
         LGE_image.to(device)
-        bb_coordinates.to(device)
+        bb_coordinates = bb_coordinates.float().to(device)
         output = self.forward(LGE_image.float())
         loss = self.loss_function(output, bb_coordinates, device=device)
+        # print('loss1 type', loss.type())
         loss_name = f"train_{str(self.loss_function_string)}_loss"
         self.log(loss_name, loss, on_step=False, on_epoch=True)
-        print('Train loss:', loss)
+        # print('Train loss:', loss)
         return loss
     
     def validation_step(self, batch, batch_idx):
@@ -128,11 +129,13 @@ def train(args):
                                                     num_workers=args.num_workers)
     val_loss = f"val_{str(args.loss_function)}_loss"
     train_loss = f"train_{str(args.loss_function)}_loss"
+    gen_callback = GenerateCallback()
     trainer = pl.Trainer(default_root_dir=args.log_dir,
                          log_every_n_steps=5,
                          checkpoint_callback=ModelCheckpoint(save_weights_only=True, mode="min", monitor=val_loss),
                          gpus=1 if torch.cuda.is_available() else 0,
                          max_epochs=args.epochs,
+                         callbacks=[gen_callback],
                          progress_bar_refresh_rate=1 if args.progress_bar else 0) 
     trainer.logger._default_hp_metric = None  # Optional logging argument that we don't need
 
@@ -263,8 +266,7 @@ if __name__ == '__main__':
     #     file_name = file_name.replace(':', ';')
     #     sys.stdout = open(os.path.join('.', args.print_dir, file_name), "w")
     sys.stdout = open(first_path, "w")
-    print(f"Dataset: {args.dataset} | model: {args.model} | loss_function:{args.loss_function} | lr: {args.lr} | \
-        batch_size: {args.batch_size} | epochs: {args.epochs} | seed: {args.seed} | version_no: {version_nr}")
+    print(f"Dataset: {args.dataset} | model: {args.model} | loss_function:{args.loss_function} | lr: {args.lr} | batch_size: {args.batch_size} | epochs: {args.epochs} | seed: {args.seed} | version_no: {version_nr}")
     train(args)
     sys.stdout.close()
     os.rename(first_path, second_path)

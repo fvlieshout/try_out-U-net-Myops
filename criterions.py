@@ -24,6 +24,8 @@ class MSEloss(torch.nn.Module):
     def init(self):
         super(MSEloss, self).init()
     def forward(self, pred, target, device=None):
+        # print('pred1 type', pred.type())
+        # print('target1 type', target.type())
         loss = f.mse_loss(pred, target, reduction='none')
         return loss.sum()
 
@@ -31,7 +33,8 @@ class weightedMSEloss(torch.nn.Module):
     def init(self):
         super(weightedMSEloss, self).init()
     def forward(self, pred, target, device=None):
-        weights = torch.Tensor([[1.0,1.0,1.0,1.0]], device=device)
+        weights = torch.Tensor([[1.0,1.0,1.0,1.0]])
+        weights = weights.to(device)
         ymin_pred, ymax_pred, xmin_pred, xmax_pred = pred.squeeze()
         ymin_real, ymax_real, xmin_real, xmax_real = target.squeeze()
         if ymin_real-ymin_pred < 0:

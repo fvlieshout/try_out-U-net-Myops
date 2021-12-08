@@ -1,5 +1,6 @@
 import numpy as np
 from torch._C import Value
+import torch
 from tqdm import tqdm
 import csv
 import os
@@ -10,8 +11,10 @@ from skimage.transform import resize
 from matplotlib import cm
 import SimpleITK as sitk
 
-ORIGINAL_DIR_NAME = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing'
-# ORIGINAL_DIR_NAME = 'AUMC_data'
+if torch.cuda.is_available():
+    ORIGINAL_DIR_NAME = 'AUMC_data'
+else:
+    ORIGINAL_DIR_NAME = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing'
 NIFTI_SUFFIX = 'LGE_niftis'
 MYO_MASK_SUFFIX = 'myo'
 AANKLEURING_MASK_SUFFIX = 'aankleuring'
@@ -35,7 +38,7 @@ def read_in_AUMC_data(mode):
     aankleuring_masks = []
 
     for i, (nifti_path, myo_mask_path, aankleuring_mask_path) in tqdm(enumerate(zip(data_paths, myo_mask_paths, aankleuring_mask_paths)), total=no_samples):
-        print(nifti_path)
+        # print(nifti_path)
         if '\\' in nifti_path:
             pat_id = nifti_path.split('\\')[-1].split('_')[0]
             pat_ids.append(pat_id)

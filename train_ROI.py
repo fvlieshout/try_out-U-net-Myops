@@ -195,7 +195,10 @@ def get_model_version_no(log_dir):
     obj_names = os.listdir(folder_path)
     highest_nr = 0
     for fn in obj_names:
-        number = int(fn.split('_')[-1])
+        number = fn.split('_')[-1]
+        if number.split('.')[-1] == 'txt':
+            continue
+        number = int(number)
         if number > highest_nr:
             highest_nr = number
     # print(data_paths)
@@ -258,6 +261,8 @@ if __name__ == '__main__':
     #     file_name = file_name.replace(':', ';')
     #     sys.stdout = open(os.path.join('.', args.print_dir, file_name), "w")
     sys.stdout = open(first_path, "w")
+    print(f"Dataset: {args.dataset} | model: {args.model} | loss_function:{args.loss_function} | lr: {args.lr} | \
+            batch_size: {args.batch_size} | epochs: {args.epochs} | seed: {args.seed} | version_no: {version_nr}")
     train(args)
     sys.stdout.close()
     os.rename(first_path, second_path)

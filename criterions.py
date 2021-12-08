@@ -50,7 +50,7 @@ class WeightedMSEloss(torch.nn.Module):
         return weighted_loss.sum()
     
 class IoUloss(torch.nn.Module):
-    def init(self, loss=True, generalized=False):
+    def __init__(self, loss=True, generalized=False):
         super().__init__()
         self.generalized = generalized
         self.loss = loss

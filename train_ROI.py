@@ -246,7 +246,7 @@ if __name__ == '__main__':
                         choices=['2D', '3D'])
 
     # Optimizer hyperparameters
-    parser.add_argument('--loss_function', default='l1', type=str,
+    parser.add_argument('--loss_function', default='iou', type=str,
                         help='What loss funciton to use for the segmentation',
                         choices=['l1', 'MSE', 'weightedMSE', 'iou', 'gio'])
     parser.add_argument('--lr', default=1e-3, type=float,

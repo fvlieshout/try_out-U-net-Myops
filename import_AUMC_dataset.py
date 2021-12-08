@@ -1,4 +1,5 @@
 import numpy as np
+from torch._C import Value
 from tqdm import tqdm
 import csv
 import os
@@ -9,8 +10,8 @@ from skimage.transform import resize
 from matplotlib import cm
 import SimpleITK as sitk
 
-# ORIGINAL_DIR_NAME = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing'
-ORIGINAL_DIR_NAME = 'AUMC_data'
+ORIGINAL_DIR_NAME = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing'
+# ORIGINAL_DIR_NAME = 'AUMC_data'
 NIFTI_SUFFIX = 'LGE_niftis'
 MYO_MASK_SUFFIX = 'myo'
 AANKLEURING_MASK_SUFFIX = 'aankleuring'
@@ -168,33 +169,53 @@ def compute_bounding_box(mask_images):
         bouding_box_coordinates.append((upper_bound, lower_bound, left_bound, right_bound))
     return bouding_box_coordinates
 
-def plot_bounding_box(LGE_img, myo_mask=None, slices=[6], box_values=None):
-    if myo_mask not None:
+def plot_bounding_box(LGE_img, myo_mask=None, slices=[6], pred_box_values=None, true_box_values=None, plot='save', model_name=None):
+    if plot not in ['save', 'show']:
+        raise ValueError("plot parameter must be either 'save' or 'show'")
+    LGE_img = LGE_img.squeeze()
+    if myo_mask is not None:
+        myo_mask = myo_mask.squeeze()
         for slice in slices:
             LGE_slice = LGE_img[slice, :, :]
             myo_slice = myo_mask[slice, :, :]
-            ymin, ymax, xmin, xmax = box_values
             fig, (ax1, ax2) = plt.subplots(1,2, figsize=[10,20])
             ax1.imshow(LGE_slice)
-            if box_values is not None:
+            ax2.imshow(myo_slice)
+            if true_box_values is not None:
+                ymin, ymax, xmin, xmax = true_box_values.squeeze()
                 box = patches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, linewidth=3, edgecolor='y', facecolor='none')
                 ax1.add_patch(box)
-            ax2.imshow(myo_slice)
-            if box_values is not None:
                 box = patches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, linewidth=3, edgecolor='y', facecolor='none')
                 ax2.add_patch(box)
-            plt.show()
+            if pred_box_values is not None:
+                ymin, ymax, xmin, xmax = pred_box_values.squeeze()
+                box = patches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, linewidth=3, edgecolor='g', facecolor='none')
+                ax1.add_patch(box)
+                box = patches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, linewidth=3, edgecolor='g', facecolor='none')
+                ax2.add_patch(box)
+            if plot == 'show':
+                plt.show()
+            if plot == 'save':
+                file_name = model_name + '.png'
+                plt.savefig(file_name)
     else:
         for slice in slices:
             LGE_slice = LGE_img[slice, :, :]
-            myo_slice = myo_mask[slice, :, :]
-            ymin, ymax, xmin, xmax = box_values
             fig, ax1 = plt.subplots(1,1, figsize=[10,20])
             ax1.imshow(LGE_slice)
-            if box_values is not None:
+            if true_box_values is not None:
+                ymin, ymax, xmin, xmax = true_box_values.squeeze()
                 box = patches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, linewidth=3, edgecolor='y', facecolor='none')
                 ax1.add_patch(box)
-            plt.show()
+            if pred_box_values is not None:
+                ymin, ymax, xmin, xmax = pred_box_values.squeeze()
+                box = patches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, linewidth=3, edgecolor='g', facecolor='none')
+                ax1.add_patch(box)
+            if plot == 'show':
+                plt.show()
+            if plot == 'save':
+                file_name = model_name + '.png'
+                plt.savefig(file_name)
 
 def get_data_paths(data_dir, modality=None):
     """

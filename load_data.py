@@ -31,7 +31,7 @@ def load_data(dataset, batch_size=8, num_workers=1, only_test=False):
         aankleuring_label_folder = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing\\aankleuring'
 
         if only_test:
-            _, _, test_dataset = get_data(dataset, only_test)
+            _, _, test_dataset = get_data(dataset, only_test=only_test)
             test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
             return test_loader
         else:
@@ -50,6 +50,7 @@ def load_data(dataset, batch_size=8, num_workers=1, only_test=False):
 def get_data(dataset, val_size=0.2, seed=42, only_test=False):
     if dataset == 'AUMC':
         if only_test:
+            LGE_imgs_test, myo_masks_test, aankleuring_masks_test, bounding_box_coordinates_test = read_in_AUMC_data('test')
             test_dataset = AUMCDataset(LGE_imgs_test, myo_masks_test, aankleuring_masks_test, bounding_box_coordinates_test, transform=None)
             train_dataset, val_dataset = None, None
         else:

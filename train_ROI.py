@@ -119,7 +119,14 @@ class GenerateCallback(pl.Callback):
         This function is called after every epoch.
         Call the save_and_sample function every N epochs.
         """
-        print(f"Epoch ({trainer.current_epoch+1}/{trainer.max_epochs}: loss = {trainer.logger}")
+        elogs = trainer.logged_metrics
+        train_loss, val_loss = None, None
+        for log_value in elogs:
+            if 'train' in log_value and 'loss' in log_value:
+                train_loss = elogs[log_value]
+            elif 'val' in log_value and 'loss' in log_value:
+                val_loss = elogs[log_value]
+        print(f"Epoch ({trainer.current_epoch+1}/{trainer.max_epochs}: train loss = {train_loss} | val loss = {val_loss}")
 
 def train(args):
 

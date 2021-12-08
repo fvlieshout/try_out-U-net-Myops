@@ -8,7 +8,9 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 class BB_model(nn.Module):
     def __init__(self) -> None:
         super(BB_model, self).__init__()
-        self.conv3D = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=3, stride=1, padding=0)
+        self.conv3D1 = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=3, stride=1, padding=0)
+        self.conv3D2 = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=3, stride=1, padding=0)
+        self.conv3D3 = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=3, stride=1, padding=0)
         resnet = models.resnet34(pretrained=True)
         layers = list(resnet.children())[:8]
         self.features1 = nn.Sequential(*layers)
@@ -16,7 +18,9 @@ class BB_model(nn.Module):
         self.relu = nn.ReLU()
     
     def forward(self, stacked_input):
-        stacked_input = self.conv3D(stacked_input.unsqueeze(1))[0]
+        stacked_input = self.conv3D1(stacked_input.unsqueeze(1))
+        stacked_input = self.conv3D2(stacked_input)
+        stacked_input = self.conv3D3(stacked_input)[0]
         h = stacked_input.shape[1]
         stacked_x = torch.zeros(h, 512)
         for i in range(h):

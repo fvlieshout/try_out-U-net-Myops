@@ -13,15 +13,13 @@ from criterions import L1loss, MSEloss, WeightedMSEloss, IoUloss
 from bounding_box_model import BB_model
 from load_data import load_data
 
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-print("Device", device)
-
 class ROIModel(pl.LightningModule):
 
-    def __init__(self, model_type, loss_function_string, lr):
+    def __init__(self, model_type, loss_function_string, lr, device):
         super().__init__()
         self.loss_function_string = loss_function_string
         self.test_val_mode = 'test'
+        self.cuda_device = device
         self.save_hyperparameters()
         if loss_function_string == 'dice':
             self.loss_function = Diceloss()
@@ -32,14 +30,16 @@ class ROIModel(pl.LightningModule):
         elif loss_function_string == 'weightedMSE':
             self.loss_function = WeightedMSEloss()
         elif loss_function_string == 'iou':
-            self.loss_function = IoUloss(generalized=False)
+            self.loss_function = IoUloss(loss=True, generalized=False)
         elif loss_function_string == 'giou':
-            self.loss_function = IoUloss(generalized=True)
+            self.loss_function = IoUloss(loss=True, generalized=True)
         else:
             raise ValueError(f"Loss function {loss_function_string} not known")
+        
+        self.iou_metric = IoUloss(loss=False, generalized=False)
 
         if model_type == 'ResNet':
-            self.model = BB_model()
+            self.model = BB_model(device=self.cuda_device)
     
     def forward(self, imgs):
         output = self.model(imgs)
@@ -52,36 +52,42 @@ class ROIModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         # Make use of the forward function, and add logging statements
         LGE_image, _, _, bb_coordinates = batch
-        LGE_image.to(device)
-        bb_coordinates = bb_coordinates.float().to(device)
+        LGE_image.to(self.cuda_device)
+        bb_coordinates = bb_coordinates.float().to(self.cuda_device)
         output = self.forward(LGE_image.float())
-        loss = self.loss_function(output, bb_coordinates, device=device)
+        loss = self.loss_function(output, bb_coordinates, device=self.cuda_device)
         # print('loss1 type', loss.type())
         loss_name = f"train_{str(self.loss_function_string)}_loss"
         self.log(loss_name, loss, on_step=False, on_epoch=True)
+        iou = self.iou_metric(output, bb_coordinates)
+        self.log("train_iou", iou, on_step=False, on_epoch=True)
         # print('Train loss:', loss)
         return loss
     
     def validation_step(self, batch, batch_idx):
         # Make use of the forward function, and add logging statements
         LGE_image, _, _, bb_coordinates = batch
-        LGE_image.to(device)
-        bb_coordinates.to(device)
+        LGE_image.to(self.cuda_device)
+        bb_coordinates.to(self.cuda_device)
         output = self.forward(LGE_image.float())
-        loss = self.loss_function(output, bb_coordinates, device=device)
+        loss = self.loss_function(output, bb_coordinates, device=self.cuda_device)
         loss_name = f"val_{str(self.loss_function_string)}_loss"
         self.log(loss_name, loss, on_step=False, on_epoch=True)
+        iou = self.iou_metric(output, bb_coordinates)
+        self.log("val_iou", iou, on_step=False, on_epoch=True)
         print('Validation loss:', loss)
 
     def test_step(self, batch, batch_idx):
         # Make use of the forward function, and add logging statements
         LGE_image, _, _, bb_coordinates = batch
-        LGE_image.to(device)
-        bb_coordinates.to(device)
+        LGE_image.to(self.cuda_device)
+        bb_coordinates.to(self.cuda_device)
         output = self.forward(LGE_image.float())
-        loss = self.loss_function(output, bb_coordinates, device=device)
+        loss = self.loss_function(output, bb_coordinates, device=self.cuda_device)
         loss_name = f"test_{str(self.loss_function_string)}_loss"
         self.log(loss_name, loss, on_step=False, on_epoch=True)
+        iou = self.iou_metric(output, bb_coordinates)
+        self.log("test_iou", iou, on_step=False, on_epoch=True)
     
     @staticmethod
     def dice_coef(img, img2):
@@ -133,6 +139,8 @@ class GenerateCallback(pl.Callback):
         print(f"Epoch ({trainer.current_epoch+1}/{trainer.max_epochs}: train loss = {train_loss} | val loss = {val_loss}")
 
 def train(args):
+    device = torch.device(args.cuda_device) if torch.cuda.is_available() else torch.device("cpu")
+    print("Device", device)
 
     os.makedirs(args.log_dir, exist_ok=True)
     train_loader, val_loader, test_loader = load_data(dataset=args.dataset,
@@ -152,7 +160,7 @@ def train(args):
 
     # Create model
     pl.seed_everything(args.seed)  # To be reproducible        
-    model = ROIModel(model_type=args.model, loss_function_string=args.loss_function, lr=args.lr)
+    model = ROIModel(model_type=args.model, loss_function_string=args.loss_function, lr=args.lr, device=device)
     model.to(device)
     trainer.fit(model, train_loader, val_loader)
     
@@ -240,13 +248,16 @@ if __name__ == '__main__':
     # Optimizer hyperparameters
     parser.add_argument('--loss_function', default='l1', type=str,
                         help='What loss funciton to use for the segmentation',
-                        choices=['l1', 'MSE', 'weightedMSE'])
+                        choices=['l1', 'MSE', 'weightedMSE', 'iou', 'gio'])
     parser.add_argument('--lr', default=1e-3, type=float,
                         help='Learning rate to use')
     parser.add_argument('--batch_size', default=1, type=int,
                         help='Minibatch size')
 
     # Other hyperparameters
+    parser.add_argument('--cuda_device', default='cuda', type=str,
+                        help='Which GPU node to use if available',
+                        choices=['cuda', 'cuda:1', 'cuda:2'])
     parser.add_argument('--dataset', default='AUMC', type=str,
                         help='What dataset to use for the segmentation',
                         choices=['AUMC', 'Myops'])

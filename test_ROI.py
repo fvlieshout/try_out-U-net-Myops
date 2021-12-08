@@ -9,9 +9,9 @@ import os
 import argparse
 import sys
 
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-
 def test(args, plot=None):
+    device = torch.device(args.cuda_device) if torch.cuda.is_available() else torch.device("cpu")
+    print("Device", device)
     loss_function = L1loss()
     test_loader = load_data(dataset=args.dataset,
                             batch_size=args.batch_size,
@@ -49,6 +49,9 @@ if __name__ == '__main__':
                         help='Minibatch size')
 
     # Other hyperparameters
+    parser.add_argument('--cuda_device', default='cuda', type=str,
+                        help='Which GPU node to use if available',
+                        choices=['cuda', 'cuda:1', 'cuda:2'])
     parser.add_argument('--dataset', default='AUMC', type=str,
                         help='What dataset to use for the segmentation',
                         choices=['AUMC', 'Myops'])

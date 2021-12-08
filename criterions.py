@@ -50,9 +50,10 @@ class WeightedMSEloss(torch.nn.Module):
         return weighted_loss.sum()
     
 class IoUloss(torch.nn.Module):
-    def init(self, generalized=False):
-        super(IoUloss, self).init()
+    def init(self, loss=True, generalized=False):
+        super().__init__()
         self.generalized = generalized
+        self.loss = loss
 
     def forward(self, pred, target, device=None):
         pred = pred.squeeze()
@@ -95,6 +96,12 @@ class IoUloss(torch.nn.Module):
         GIoU = IoU - (area_c - union_area)/area_c
 
         if self.generalized:
-            return 1 - GIoU
+            if self.loss:
+                return 1 - GIoU
+            else:
+                return GIoU
         else:
-            return 1-IoU
+            if self.loss:
+                return 1-IoU
+            else:
+                return IoU

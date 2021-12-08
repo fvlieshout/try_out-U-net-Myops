@@ -1,4 +1,12 @@
+cd deep_risk_models/try_out-U-net-Myops
+conda activate deep_risk
+
 python train_ROI.py --loss_function l1 --lr 1e-3 --epochs 200
 python train_ROI.py --loss_function l1 --lr 1e-4 --epochs 200
 python train_ROI.py --loss_function MSE --lr 1e-4 --epochs 200
 python train_ROI.py --loss_function weightedMSE --lr 1e-4 --epochs 200
+python train_ROI.py --loss_function iou --lr 1e-4 --epochs 200
+python train_ROI.py --loss_function giou --lr 1e-4 --epochs 200
+python train_ROI.py --loss_function l1 --lr 1e-4 --epochs 200 --cuda_device cuda:1
+python train_ROI.py --loss_function MSE --lr 1e-4 --epochs 200 --cuda_device cuda:1
+python train_ROI.py --loss_function weightedMSE --lr 1e-4 --epochs 200 --cuda_device cuda:2

@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 ar1 = np.array([[0,1,1], [0,0,0], [0,0,1]])
 ar2 = np.array([0,1,2])
@@ -35,10 +36,14 @@ def get_bounding_box_slice(arr):
     return values
 
 # print(str('stringetje'))
-print(ar1)
-print(first_nonzero(ar1, axis=0))
-print(first_nonzero(ar1, axis=0).min(axis=0))
-print(get_bounding_box_slice(ar1))
-print(arr)
-print(first_nonzero(arr, axis=0))
-print(first_nonzero(arr, axis=0).min(axis=0))
+# print(ar1)
+# print(first_nonzero(ar1, axis=0))
+# print(first_nonzero(ar1, axis=0).min(axis=0))
+# print(get_bounding_box_slice(ar1))
+# print(arr)
+# print(first_nonzero(arr, axis=0))
+# print(first_nonzero(arr, axis=0).min(axis=0))
+
+a = torch.Tensor([[1,2],[2,2]])
+b = a.unsqueeze(1)
+print(a.shape, b.shape)

@@ -16,7 +16,6 @@ from load_data import load_data
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 print("Device", device)
 
-
 class ROIModel(pl.LightningModule):
 
     def __init__(self, model_type, loss_function_string, lr):
@@ -191,6 +190,17 @@ def set_seed(seed):
         torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
 
+def get_model_version_no(log_dir):
+    folder_path = os.path.join(log_dir, 'lightning_logs')
+    obj_names = os.listdir(folder_path)
+    highest_nr = 0
+    for fn in obj_names:
+        number = int(fn.split('_')[-1])
+        if number > highest_nr:
+            highest_nr = number
+    # print(data_paths)
+    return highest_nr+1
+
 if __name__ == '__main__':
     # Feel free to add more argument parameters
     parser = argparse.ArgumentParser(
@@ -238,7 +248,16 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     #write prints to file
-    file_name = f'train_ROI_{datetime.now()}.txt'
-    sys.stdout = open(os.path.join(args.print_dir, file_name), "w")
+    version_nr = get_model_version_no(args.log_dir)
+    file_name = f'train_ROI_version_{version_nr}.txt'
+    first_path = os.path.join(args.log_dir, 'lightning_logs', file_name)
+    second_path = os.path.join(args.log_dir, 'lightning_logs', f"version_{version_nr}", file_name)
+    # if str(device) == 'cuda:0':
+    #     sys.stdout = open(os.path.join(args.print_dir, file_name), "w")
+    # else:
+    #     file_name = file_name.replace(':', ';')
+    #     sys.stdout = open(os.path.join('.', args.print_dir, file_name), "w")
+    sys.stdout = open(first_path, "w")
     train(args)
     sys.stdout.close()
+    os.rename(first_path, second_path)

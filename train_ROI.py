@@ -10,7 +10,7 @@ import time
 import argparse
 import random
 from criterions import L1loss, MSEloss, WeightedMSEloss, IoUloss
-from bounding_box_model import BB_model
+from bounding_box_model import BB_model_3x3D_ResNet, BB_model_ResNet_2x2D
 from load_data import load_data
 
 class ROIModel(pl.LightningModule):
@@ -38,8 +38,10 @@ class ROIModel(pl.LightningModule):
         
         self.iou_metric = IoUloss(loss=False, generalized=False)
 
-        if model_type == 'ResNet':
-            self.model = BB_model(device=self.cuda_device)
+        if model_type == '3x3D_ResNet':
+            self.model = BB_model_3x3D_ResNet(device=self.cuda_device)
+        elif model_type == 'ResNet_2x2D':
+            self.model = BB_model_ResNet_2x2D(device=self.cuda_device)
     
     def forward(self, imgs):
         output = self.model(imgs)
@@ -234,9 +236,9 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Model hyperparameters
-    parser.add_argument('--model', default='ResNet', type=str,
+    parser.add_argument('--model', default='ResNet_2x2D', type=str,
                         help='What model to use for the segmentation',
-                        choices=['ResNet'])
+                        choices=['3x3D_ResNet', 'ResNet_2x2D'])
     parser.add_argument('--in_channels', default=1, type=int,
                         help='Number of input channels for the convolutional networks.')
     parser.add_argument('--out_channels', default=1, type=int,

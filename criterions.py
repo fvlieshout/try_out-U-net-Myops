@@ -34,7 +34,7 @@ class WeightedMSEloss(torch.nn.Module):
         super(WeightedMSEloss, self).init()
     def forward(self, pred, target, device=None):
         weights = torch.Tensor([[1.0,1.0,1.0,1.0]])
-        weights = weights.to(device)
+        weights = weights.type_as(pred)
         ymin_pred, ymax_pred, xmin_pred, xmax_pred = pred.squeeze()
         ymin_real, ymax_real, xmin_real, xmax_real = target.squeeze()
         if ymin_real < ymin_pred:

@@ -52,9 +52,10 @@ class ROIModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         # Make use of the forward function, and add logging statements
         LGE_image, _, _, bb_coordinates = batch
-        LGE_image.to(self.cuda_device)
-        bb_coordinates = bb_coordinates.float().to(self.cuda_device)
-        output = self.forward(LGE_image.float())
+        # LGE_image.to(self.cuda_device)
+        LGE_image = LGE_image.float()
+        bb_coordinates = bb_coordinates.type_as(LGE_image)
+        output = self.forward(LGE_image)
         loss = self.loss_function(output, bb_coordinates, device=self.cuda_device)
         # print('loss1 type', loss.type())
         loss_name = f"train_{str(self.loss_function_string)}_loss"
@@ -67,22 +68,24 @@ class ROIModel(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         # Make use of the forward function, and add logging statements
         LGE_image, _, _, bb_coordinates = batch
-        LGE_image.to(self.cuda_device)
-        bb_coordinates.to(self.cuda_device)
-        output = self.forward(LGE_image.float())
+        # LGE_image.to(self.cuda_device)
+        LGE_image = LGE_image.float()
+        bb_coordinates = bb_coordinates.type_as(LGE_image)
+        output = self.forward(LGE_image)
         loss = self.loss_function(output, bb_coordinates, device=self.cuda_device)
         loss_name = f"val_{str(self.loss_function_string)}_loss"
         self.log(loss_name, loss, on_step=False, on_epoch=True)
         iou = self.iou_metric(output, bb_coordinates)
         self.log("val_iou", iou, on_step=False, on_epoch=True)
-        print('Validation loss:', loss)
+        # print('Validation loss:', loss)
 
     def test_step(self, batch, batch_idx):
         # Make use of the forward function, and add logging statements
         LGE_image, _, _, bb_coordinates = batch
-        LGE_image.to(self.cuda_device)
-        bb_coordinates.to(self.cuda_device)
-        output = self.forward(LGE_image.float())
+        # LGE_image.to(self.cuda_device)
+        LGE_image = LGE_image.float()
+        bb_coordinates = bb_coordinates.type_as(LGE_image)
+        output = self.forward(LGE_image)
         loss = self.loss_function(output, bb_coordinates, device=self.cuda_device)
         loss_name = f"test_{str(self.loss_function_string)}_loss"
         self.log(loss_name, loss, on_step=False, on_epoch=True)
@@ -161,7 +164,7 @@ def train(args):
     # Create model
     pl.seed_everything(args.seed)  # To be reproducible        
     model = ROIModel(model_type=args.model, loss_function_string=args.loss_function, lr=args.lr, device=device)
-    model.to(device)
+    # model.to(device)
     trainer.fit(model, train_loader, val_loader)
     
     #Testing
@@ -248,7 +251,7 @@ if __name__ == '__main__':
     # Optimizer hyperparameters
     parser.add_argument('--loss_function', default='iou', type=str,
                         help='What loss funciton to use for the segmentation',
-                        choices=['l1', 'MSE', 'weightedMSE', 'iou', 'gio'])
+                        choices=['l1', 'MSE', 'weightedMSE', 'iou', 'giou'])
     parser.add_argument('--lr', default=1e-3, type=float,
                         help='Learning rate to use')
     parser.add_argument('--batch_size', default=1, type=int,

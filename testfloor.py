@@ -44,6 +44,4 @@ def get_bounding_box_slice(arr):
 # print(first_nonzero(arr, axis=0))
 # print(first_nonzero(arr, axis=0).min(axis=0))
 
-a = torch.Tensor([[1,2],[2,2]])
-b = a.unsqueeze(1)
-print(a.shape, b.shape)
+print(int(23 * 0.2))

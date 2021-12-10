@@ -12,6 +12,7 @@ from matplotlib import cm
 import SimpleITK as sitk
 import torchvision.transforms as transforms
 import cv2
+from utils import normalize
 
 if torch.cuda.is_available():
     ORIGINAL_DIR_NAME = 'AUMC_data'
@@ -53,6 +54,8 @@ def read_in_AUMC_data(mode, resize='resize', size=(256, 256)):
         LGE_img = sitk.GetArrayFromImage(sitk.ReadImage(nifti_path))
         myo_mask = sitk.GetArrayFromImage(sitk.ReadImage(myo_mask_path))
         aankleuring_mask = sitk.GetArrayFromImage(sitk.ReadImage(aankleuring_mask_path))
+        if LGE_img.shape[1] != myo_mask.shape[0] or LGE_image.shape[1] != aankleuring_mask.shape[0]:
+            raise ValueError(f"Inconsistent shapes for {mode}-images {pat_id}. LGE-img: {LGE_img.shape}; myo-mask: {myo_mask.shape}; aankleuring-mask: {aankleuring_mask.shape}")
         myo_mask = myo_mask.astype(np.int16)
         aankleuring_mask = aankleuring_mask.astype(np.int16)
         # insert one dimension to the existing data as image channel
@@ -99,15 +102,6 @@ def read_in_AUMC_data(mode, resize='resize', size=(256, 256)):
     
     # plot_bounding_box(LGE_imgs[0], myo_masks[0], [5,6,7], bounding_box_coordinates[0])
     return LGE_imgs, myo_masks, aankleuring_masks, bounding_box_coordinates
-    
-def normalize(LGE_images):
-    norm_images = []
-    for image in LGE_images:
-        image = image.astype(float)
-        image -= np.amin(image)
-        image /= np.amax(image)
-        norm_images.append(image)
-    return norm_images
 
 def crop_imgs(LGE_images, myo_masks, aankleuring_masks):
     smallest_height, smallest_width = 1e6, 1e6
@@ -147,6 +141,7 @@ def crop_imgs(LGE_images, myo_masks, aankleuring_masks):
     return new_LGE_imgs, new_myo_masks, new_aankleuring_masks
 
 def resize_images(LGE_images, myo_masks, aankleuring_masks, size):
+    print(f"LGE img shape: {LGE_images.shape}. myo shape: {myo_masks.shape}. aankleuring shape: {aankleuring_masks.shape}")
     LGE_imgs_new, myo_masks_new, aankleuring_masks_new = np.zeros((LGE_images.shape[0], size[0], size[1])), np.zeros((LGE_images.shape[0], size[0], size[1])), np.zeros((LGE_images.shape[0], size[0], size[1]))
     for i in range(LGE_images.shape[0]):
         LGE_imgs_new[i] = cv2.resize(LGE_images[i], dsize=size, interpolation=cv2.INTER_LINEAR)

@@ -146,8 +146,6 @@ def train(args):
     device = torch.device(args.cuda_device) if torch.cuda.is_available() else torch.device("cpu")
     print("Device", device)
 
-    print(f"transformations: {args.transformations}")
-
     os.makedirs(args.log_dir, exist_ok=True)
     train_loader, val_loader, test_loader = load_data(dataset=args.dataset,
                                                     batch_size=args.batch_size,
@@ -265,7 +263,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.transformations is None:
         args.transformations = []
-    print(args.transformations)
 
     #write prints to file
     version_nr = get_model_version_no(args.log_dir)
@@ -278,7 +275,7 @@ if __name__ == '__main__':
     #     file_name = file_name.replace(':', ';')
     #     sys.stdout = open(os.path.join('.', args.print_dir, file_name), "w")
     sys.stdout = open(first_path, "w")
-    print(f"Dataset: {args.dataset} | model: {args.model} | loss_function:{args.loss_function} | lr: {args.lr} | batch_size: {args.batch_size} | epochs: {args.epochs} | seed: {args.seed} | version_no: {version_nr}")
+    print(f"Dataset: {args.dataset} | model: {args.model} | loss_function:{args.loss_function} | lr: {args.lr} | transformations: {args.transformations} | batch_size: {args.batch_size} | epochs: {args.epochs} | seed: {args.seed} | version_no: {version_nr}")
     train(args)
     sys.stdout.close()
     os.rename(first_path, second_path)

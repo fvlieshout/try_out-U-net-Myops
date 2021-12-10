@@ -57,7 +57,7 @@ def load_data(dataset, batch_size=8, num_workers=1, only_test=False, transformat
         myo_label_folder = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing\\myo'
         aankleuring_label_folder = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing\\aankleuring'
     
-        print(f"transformations: {transformations}, {type(transformations)}")
+        # print(f"transformations: {transformations}, {type(transformations)}")
         if only_test:
             _, _, test_dataset = get_data(dataset, only_test=only_test, transforms=transformations, size=resize)
             test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
@@ -136,7 +136,7 @@ def get_data(dataset, val_size=0.2, seed=42, only_test=False, transforms=[], siz
             # validation_items = int(len(LGE_imgs_train) * val_size)
             # train_dataset, val_dataset = random_split(train_dataset, [len(LGE_imgs_train) - validation_items, validation_items], generator=torch.Generator().manual_seed(seed))
             # val_dataset.disable_transformations()
-        return train_dataset, val_dataset, test_dataset
+    return train_dataset, val_dataset, test_dataset
 
 def perform_transformations(transform, LGE_image, myops_mask, aankleuring_mask):
     if 'hflip' in transform:

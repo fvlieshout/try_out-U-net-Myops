@@ -54,7 +54,7 @@ def read_in_AUMC_data(mode, resize='resize', size=(256, 256)):
         LGE_img = sitk.GetArrayFromImage(sitk.ReadImage(nifti_path))
         myo_mask = sitk.GetArrayFromImage(sitk.ReadImage(myo_mask_path))
         aankleuring_mask = sitk.GetArrayFromImage(sitk.ReadImage(aankleuring_mask_path))
-        if LGE_img.squeeze().shape != myo_mask.shape or LGE_image.squeeze().shape != aankleuring_mask.shape:
+        if LGE_img.squeeze().shape != myo_mask.shape or LGE_img.squeeze().shape != aankleuring_mask.shape:
             raise ValueError(f"Inconsistent shapes for {mode}-images {pat_id}. LGE-img: {LGE_img.shape}; myo-mask: {myo_mask.shape}; aankleuring-mask: {aankleuring_mask.shape}")
         myo_mask = myo_mask.astype(np.int16)
         aankleuring_mask = aankleuring_mask.astype(np.int16)

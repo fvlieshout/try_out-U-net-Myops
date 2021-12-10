@@ -10,6 +10,8 @@ from mpl_toolkits.mplot3d import axes3d
 from skimage.transform import resize
 from matplotlib import cm
 import SimpleITK as sitk
+import torchvision.transforms as transforms
+import cv2
 
 if torch.cuda.is_available():
     ORIGINAL_DIR_NAME = 'AUMC_data'
@@ -20,7 +22,7 @@ MYO_MASK_SUFFIX = 'myo'
 AANKLEURING_MASK_SUFFIX = 'aankleuring'
 BOUNDING_BOX_FILE = 'bounding_boxes.csv'
 
-def read_in_AUMC_data(mode):
+def read_in_AUMC_data(mode, resize='resize', size=(256, 256)):
     if mode not in ['train', 'test']:
         raise ValueError("'mode' argument should be either 'train' or 'test'")
     data_folder_path = os.path.join(ORIGINAL_DIR_NAME, mode, NIFTI_SUFFIX)
@@ -36,6 +38,9 @@ def read_in_AUMC_data(mode):
     LGE_imgs = []
     myo_masks = []
     aankleuring_masks = []
+
+    # if resize == 'resize':
+    #     resizing = transforms.Resize(size)
 
     for i, (nifti_path, myo_mask_path, aankleuring_mask_path) in tqdm(enumerate(zip(data_paths, myo_mask_paths, aankleuring_mask_paths)), total=no_samples):
         # print(nifti_path)
@@ -58,10 +63,18 @@ def read_in_AUMC_data(mode):
         myo_mask = myo_mask.squeeze()
         aankleuring_mask = aankleuring_mask.squeeze()
 
+        if resize == 'resize':
+            # LGE_img = resizing(LGE_img)
+            # myo_mask = resizing(myo_mask)
+            # aankleuring_mask = resizing(aankleuring_mask)
+            LGE_img, myo_mask, aankleuring_mask = resize_images(LGE_img, myo_mask, aankleuring_mask, size)
+
         LGE_imgs.append(LGE_img)
         myo_masks.append(myo_mask)
         aankleuring_masks.append(myo_mask)
-    LGE_imgs, myo_masks, aankleuring_masks = crop_imgs(LGE_imgs, myo_masks, aankleuring_masks)
+    
+    if resize == 'crop':
+        LGE_imgs, myo_masks, aankleuring_masks = crop_imgs(LGE_imgs, myo_masks, aankleuring_masks)
     LGE_imgs = normalize(LGE_imgs)
 
     if not os.path.isfile(os.path.join(ORIGINAL_DIR_NAME, mode, BOUNDING_BOX_FILE)):
@@ -132,6 +145,15 @@ def crop_imgs(LGE_images, myo_masks, aankleuring_masks):
     # new_myo_masks = np.stack(new_myo_masks)
     # new_aankleuring_masks = np.stack(new_aankleuring_masks)
     return new_LGE_imgs, new_myo_masks, new_aankleuring_masks
+
+def resize_images(LGE_images, myo_masks, aankleuring_masks, size):
+    LGE_imgs_new, myo_masks_new, aankleuring_masks_new = np.zeros((LGE_images.shape[0], size[0], size[1])), np.zeros((LGE_images.shape[0], size[0], size[1])), np.zeros((LGE_images.shape[0], size[0], size[1]))
+    for i in range(LGE_images.shape[0]):
+        LGE_imgs_new[i] = cv2.resize(LGE_images[i], dsize=size, interpolation=cv2.INTER_LINEAR)
+        myo_masks_new[i] = cv2.resize(myo_masks[i], dsize=size, interpolation=cv2.INTER_LINEAR)
+        aankleuring_masks_new[i] = cv2.resize(aankleuring_masks[i], dsize=size, interpolation=cv2.INTER_LINEAR)
+    return LGE_imgs_new, myo_masks_new, aankleuring_masks_new
+
 
 def get_bounding_box_slice(arr):
     values = {}

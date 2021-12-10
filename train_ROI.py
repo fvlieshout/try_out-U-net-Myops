@@ -21,9 +21,7 @@ class ROIModel(pl.LightningModule):
         self.test_val_mode = 'test'
         self.cuda_device = device
         self.save_hyperparameters()
-        if loss_function_string == 'dice':
-            self.loss_function = Diceloss()
-        elif loss_function_string == 'l1':
+        if loss_function_string == 'l1':
             self.loss_function = L1loss()
         elif loss_function_string == 'MSE':
             self.loss_function = MSEloss()
@@ -147,7 +145,8 @@ def train(args):
     os.makedirs(args.log_dir, exist_ok=True)
     train_loader, val_loader, test_loader = load_data(dataset=args.dataset,
                                                     batch_size=args.batch_size,
-                                                    num_workers=args.num_workers)
+                                                    num_workers=args.num_workers,
+                                                    transformations=args.transformations)
     val_loss = f"val_{str(args.loss_function)}_loss"
     train_loss = f"train_{str(args.loss_function)}_loss"
     gen_callback = GenerateCallback()
@@ -263,6 +262,8 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', default='AUMC', type=str,
                         help='What dataset to use for the segmentation',
                         choices=['AUMC', 'Myops'])
+    parser.add_argument('--transformations', nargs='*', default=[],
+                        choices=['hflip', 'vflip', 'rotate'])
     parser.add_argument('--epochs', default=80, type=int,
                         help='Max number of epochs')
     parser.add_argument('--seed', default=42, type=int,

@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import torchvision.transforms as transforms
 
 ar1 = np.array([[0,1,1], [0,0,0], [0,0,1]])
 ar2 = np.array([0,1,2])
@@ -44,4 +45,11 @@ def get_bounding_box_slice(arr):
 # print(first_nonzero(arr, axis=0))
 # print(first_nonzero(arr, axis=0).min(axis=0))
 
-print(int(23 * 0.2))
+tensora = torch.Tensor([[0,1],[2,3]])
+print(tensora)
+tensorb = torch.rot90(tensora, 1, [0,1])
+tensorc = torch.rot90(tensora, 2, [0,1])
+tensord = torch.rot90(tensora, 3, [0,1])
+print(tensorb)
+print(tensorc)
+print(tensord)

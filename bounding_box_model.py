@@ -24,6 +24,7 @@ class BB_model_3x3D_ResNet(nn.Module):
         stacked_input = self.conv3D3(stacked_input)[0]
         h = stacked_input.shape[1]
         stacked_x = torch.zeros(h, 512)
+        stacked_x = stacked_x.type_as(stacked_input)
         for i in range(h):
             x = stacked_input[:, i, :, :]
             x = torch.unsqueeze(x, 0)
@@ -32,7 +33,7 @@ class BB_model_3x3D_ResNet(nn.Module):
             x = self.relu(x)
             x = nn.AdaptiveAvgPool2d((1,1))(x)
             stacked_x[i] = torch.squeeze(x)
-        x = torch.unsqueeze(torch.mean(stacked_x, dim=0), 0).to(self.cuda_device)
+        x = torch.unsqueeze(torch.mean(stacked_x, dim=0), 0)
         x = self.bb_layer(x)
         return x
 

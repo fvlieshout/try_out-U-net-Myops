@@ -1,4 +1,5 @@
 import os
+import sys
 import argparse
 import time
 import numpy as np
@@ -14,6 +15,7 @@ from load_data import load_data
 from unet3d_model.unet3d import UnetModel
 from segmentation_model import UNet
 from criterions import Diceloss
+from utils import get_model_version_no
 
 class SegmentationModel(pl.LightningModule):
 
@@ -238,4 +240,18 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    #write prints to file
+    version_nr = get_model_version_no(args.log_dir)
+    file_name = f'train_segmentation_version_{version_nr}.txt'
+    first_path = os.path.join(args.log_dir, 'lightning_logs', file_name)
+    second_path = os.path.join(args.log_dir, 'lightning_logs', f"version_{version_nr}", file_name)
+    # if str(device) == 'cuda:0':
+    #     sys.stdout = open(os.path.join(args.print_dir, file_name), "w")
+    # else:
+    #     file_name = file_name.replace(':', ';')
+    #     sys.stdout = open(os.path.join('.', args.print_dir, file_name), "w")
+    sys.stdout = open(first_path, "w")
+    print(f"Dataset: {args.dataset} | model: {args.model} | loss_function:{args.loss_function} | lr: {args.lr} | batch_size: {args.batch_size} | epochs: {args.epochs} | seed: {args.seed} | version_no: {version_nr}")
     train(args)
+    sys.stdout.close()
+    os.rename(first_path, second_path)

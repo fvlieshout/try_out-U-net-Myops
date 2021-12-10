@@ -11,3 +11,10 @@ python train_ROI.py --loss_function giou --lr 1e-4 --epochs 200
 python train_ROI.py --loss_function l1 --lr 1e-4 --epochs 200
 python train_ROI.py --loss_function MSE --lr 1e-4 --epochs 200
 python train_ROI.py --loss_function weightedMSE --lr 1e-4 --epochs 200
+python train_ROI.py --loss_function l1 --lr 1e-4 --epochs 200 --model ResNet_2x2D
+python train_ROI.py --loss_function MSE --lr 1e-4 --epochs 200 --model ResNet_2x2D
+python train_ROI.py --loss_function weightedMSE --lr 1e-4 --epochs 200 --model ResNet_2x2D
+python train_ROI.py --loss_function giou --lr 1e-4 --epochs 200 --model ResNet_2x2D
+
+
+python train_segmentation.py --loss_function dice --lr 1e-4 --epochs 200 --model UNet2D

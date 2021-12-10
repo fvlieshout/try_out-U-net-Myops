@@ -12,6 +12,7 @@ import random
 from criterions import L1loss, MSEloss, WeightedMSEloss, IoUloss
 from bounding_box_model import BB_model_3x3D_ResNet, BB_model_ResNet_2x2D
 from load_data import load_data
+from utils import get_model_version_no
 
 class ROIModel(pl.LightningModule):
 
@@ -209,28 +210,6 @@ def evaluate(trainer, model, test_dataloader, val_dataloader, loss_function):
           f'\n epochs: {trainer.current_epoch + 1}\n')
 
     return test_accuracy, val_accuracy
-
-def set_seed(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
-
-def get_model_version_no(log_dir):
-    folder_path = os.path.join(log_dir, 'lightning_logs')
-    obj_names = os.listdir(folder_path)
-    highest_nr = 0
-    for fn in obj_names:
-        number = fn.split('_')[-1]
-        if number.split('.')[-1] == 'txt':
-            continue
-        number = int(number)
-        if number > highest_nr:
-            highest_nr = number
-    # print(data_paths)
-    return highest_nr+1
 
 if __name__ == '__main__':
     # Feel free to add more argument parameters

@@ -53,7 +53,7 @@ class BB_model_ResNet_2x2D(nn.Module):
     
     def forward(self, stacked_input):
         h = stacked_input.shape[1]
-        stacked_x = torch.zeros(h, 512)
+        stacked_x = torch.zeros(h, 512).type_as(stacked_input)
         for i in range(h):
             x = stacked_input[:, i, :, :]
             x = torch.unsqueeze(x, 0)

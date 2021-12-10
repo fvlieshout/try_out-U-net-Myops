@@ -56,13 +56,14 @@ def load_data(dataset, batch_size=8, num_workers=1, only_test=False, transformat
         image_folder = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing\\LGE_niftis'
         myo_label_folder = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing\\myo'
         aankleuring_label_folder = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis\\labels\\labels_model_testing\\aankleuring'
-
+    
+        print(f"transformations: {transformations}, {type(transformations)}")
         if only_test:
-            _, _, test_dataset = get_data(dataset, only_test=only_test, transformations=transformations, size=resize)
+            _, _, test_dataset = get_data(dataset, only_test=only_test, transforms=transformations, size=resize)
             test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
             return test_loader
         else:
-            train_dataset, val_dataset, test_dataset = get_data(dataset, transformations=transformations, size=resize)
+            train_dataset, val_dataset, test_dataset = get_data(dataset, transforms=transformations, size=resize)
             train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
             test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
             val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
@@ -70,11 +71,11 @@ def load_data(dataset, batch_size=8, num_workers=1, only_test=False, transformat
     elif dataset == 'Myops':
         print()
     else:
-        raise ValueError(f"Dataset name {dataset} is not recognized. Choose either 'AUMC' or 'Myops'")
+        raise ValueError(f"Dataset name {dataset} is not recognized. Choose either 'AUMC2D', 'AUMC3D' or 'Myops'")
     
     return train_loader, val_loader, test_loader
 
-def get_data(dataset, val_size=0.2, seed=42, only_test=False, transformations=[], size=(256, 256)):
+def get_data(dataset, val_size=0.2, seed=42, only_test=False, transforms=[], size=(256, 256)):
     if dataset == 'AUMC3D':
         if only_test:
             LGE_imgs_test, myo_masks_test, aankleuring_masks_test, bounding_box_coordinates_test = read_in_AUMC_data('test', resize='crop')
@@ -94,7 +95,7 @@ def get_data(dataset, val_size=0.2, seed=42, only_test=False, transformations=[]
             myo_masks_train = [myo_masks_train[i] for i in train_indices]
             aankleuring_masks_train = [aankleuring_masks_train[i] for i in train_indices]
             bounding_box_coordinates_train = [bounding_box_coordinates_train[i] for i in train_indices]
-            train_dataset = AUMCDataset3D(LGE_imgs_train, myo_masks_train, aankleuring_masks_train, bounding_box_coordinates_train, transform=transformations)
+            train_dataset = AUMCDataset3D(LGE_imgs_train, myo_masks_train, aankleuring_masks_train, bounding_box_coordinates_train, transform=transforms)
             val_dataset = AUMCDataset3D(LGE_img_val, myo_masks_val, aankleuring_masks_val, bounding_box_coordinates_val, transform=None)
             test_dataset = AUMCDataset3D(LGE_imgs_test, myo_masks_test, aankleuring_masks_test, bounding_box_coordinates_test, transform=None)
     elif dataset == 'AUMC2D':

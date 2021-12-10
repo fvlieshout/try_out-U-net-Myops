@@ -146,6 +146,8 @@ def train(args):
     device = torch.device(args.cuda_device) if torch.cuda.is_available() else torch.device("cpu")
     print("Device", device)
 
+    print(f"transformations: {args.transformations}")
+
     os.makedirs(args.log_dir, exist_ok=True)
     train_loader, val_loader, test_loader = load_data(dataset=args.dataset,
                                                     batch_size=args.batch_size,
@@ -241,9 +243,9 @@ if __name__ == '__main__':
     parser.add_argument('--cuda_device', default='cuda', type=str,
                         help='Which GPU node to use if available',
                         choices=['cuda', 'cuda:1', 'cuda:2'])
-    parser.add_argument('--dataset', default='AUMC', type=str,
+    parser.add_argument('--dataset', default='AUMC3D', type=str,
                         help='What dataset to use for the segmentation',
-                        choices=['AUMC', 'Myops'])
+                        choices=['AUMC2D', 'AUMC3D', 'Myops'])
     parser.add_argument('--transformations', nargs='*', default=[],
                         choices=['hflip', 'vflip', 'rotate'])
     parser.add_argument('--epochs', default=80, type=int,
@@ -261,6 +263,9 @@ if __name__ == '__main__':
                               'Not to be used in conjuction with SLURM jobs'))
 
     args = parser.parse_args()
+    if args.transformations is None:
+        args.transformations = []
+    print(args.transformations)
 
     #write prints to file
     version_nr = get_model_version_no(args.log_dir)

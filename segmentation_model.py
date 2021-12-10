@@ -80,4 +80,5 @@ class UNet(nn.Module):
         map = self.head(decFeatures)
         if self.retainDim:
             map = F.interpolate(map, self.outSize)
+        map = nn.Sigmoid()(map) #map all values between 0 and 1
         return map

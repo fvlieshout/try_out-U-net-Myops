@@ -46,7 +46,7 @@ def set_seed(seed):
 def get_model_version_no(log_dir):
     folder_path = os.path.join(log_dir, 'lightning_logs')
     obj_names = os.listdir(folder_path)
-    highest_nr = 0
+    highest_nr = -1
     for fn in obj_names:
         number = fn.split('_')[-1]
         if number.split('.')[-1] == 'txt':

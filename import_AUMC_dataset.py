@@ -55,7 +55,7 @@ def read_in_AUMC_data(mode, resize='resize', size=(256, 256)):
         myo_mask = sitk.GetArrayFromImage(sitk.ReadImage(myo_mask_path))
         aankleuring_mask = sitk.GetArrayFromImage(sitk.ReadImage(aankleuring_mask_path))
         if LGE_img.squeeze().shape != myo_mask.shape or LGE_img.squeeze().shape != aankleuring_mask.shape:
-            raise ValueError(f"Inconsistent shapes for {mode}-images {pat_id}. LGE-img: {LGE_img.shape}; myo-mask: {myo_mask.shape}; aankleuring-mask: {aankleuring_mask.shape}")
+            raise ValueError(f"Inconsistent shapes for {mode}-images {pat_id}. LGE-img: {LGE_img.shape}; myo-mask: {myo_mask.shape}; aankleuring-mask: {aankleuring_mask.shape}. {nifti_path} {myo_mask_path} {aankleuring_mask_path}")
         myo_mask = myo_mask.astype(np.int16)
         aankleuring_mask = aankleuring_mask.astype(np.int16)
         # insert one dimension to the existing data as image channel
@@ -141,7 +141,6 @@ def crop_imgs(LGE_images, myo_masks, aankleuring_masks):
     return new_LGE_imgs, new_myo_masks, new_aankleuring_masks
 
 def resize_images(LGE_images, myo_masks, aankleuring_masks, size):
-    print(f"LGE img shape: {LGE_images.shape}. myo shape: {myo_masks.shape}. aankleuring shape: {aankleuring_masks.shape}")
     LGE_imgs_new, myo_masks_new, aankleuring_masks_new = np.zeros((LGE_images.shape[0], size[0], size[1])), np.zeros((LGE_images.shape[0], size[0], size[1])), np.zeros((LGE_images.shape[0], size[0], size[1]))
     for i in range(LGE_images.shape[0]):
         LGE_imgs_new[i] = cv2.resize(LGE_images[i], dsize=size, interpolation=cv2.INTER_LINEAR)
@@ -179,7 +178,7 @@ def compute_bounding_box(mask_images):
     for mask in mask_images:
         upper_bound, left_bound = int(1e3), int(1e3)
         lower_bound, right_bound = 0, 0
-        for i in range(mask.shape[1]):
+        for i in range(mask.shape[0]):
             slice = mask[i, :, :]
             coords = get_bounding_box_slice(slice)
             if coords['y1'] < upper_bound: upper_bound = coords['y1']
@@ -247,15 +246,11 @@ def get_data_paths(data_dir, modality=None):
     :return: data paths
     """
     data_paths = []
-    # data_dir = data_dirs[modality]
-    # subject_dirs = glob.glob(os.path.join(os.path.dirname(__file__), data_dir, "*"))
-    # subject_dirs = glob.glob(os.path.join(os.path.dirname(data_dir), "*"))
-    # for subject_dir in subject_dirs:
     obj_names = next(os.walk(data_dir))[2]
     for fn in obj_names:
         path = os.path.join(data_dir, fn)
         data_paths.append(path)
-    # print(data_paths)
+    data_paths = sorted(data_paths)
     return data_paths
 
 if __name__ == '__main__':

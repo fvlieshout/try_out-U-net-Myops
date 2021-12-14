@@ -1,6 +1,8 @@
 ssh flieshout@10.89.14.15
 cd deep_risk_models/try_out-U-net-Myops
 conda activate deep_risk
+nnUNet_train 2d nnUNetTrainerV2 Task500_MyocardSegmentation FOLD --npz
+CUDA_VISIBLE_DEVICES=1 nnUNet_train 2d nnUNetTrainerV2 Task500_MyocardSegmentation FOLD --npz
 
 python train_ROI.py --loss_function l1 --lr 1e-3 --epochs 200
 python train_ROI.py --loss_function l1 --lr 1e-4 --epochs 200
@@ -18,3 +20,6 @@ python train_ROI.py --loss_function giou --lr 1e-4 --epochs 200 --model ResNet_2
 
 
 python train_segmentation.py --loss_function dice --lr 1e-4 --epochs 200 --model UNet2D
+
+nnUNet_raw_data_base/nnUNet_raw_data/Task500_MyocardSegmentation/labelsTs
+nnUNet_raw_data_base/nnUNet_raw_data/Task500_MyocardSegmentation/predictionsTs/2d_model1

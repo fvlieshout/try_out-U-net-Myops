@@ -9,6 +9,10 @@
 AUMC_data/
 output/
 */__pycache__/
+nnUNet/nnUNet_preprocessed/
+nnUNet/nnUNet_raw_data_base/
+nnUNet/nnUNet_trained_models/
+
 
 # User-specific files
 *.rsuser

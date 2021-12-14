@@ -85,16 +85,32 @@ def create_test_files_and_move(patids, num_test, current_folder):
         if f.split('_')[0] in test_ids:
             shutil.move(os.path.join(orig_folders['aankleuring'], f), target_folders['aankleuring'], f)
 
+def add_zeros_to_filename(folder):
+    obj_names = next(os.walk(folder))[2]
+    for fn in obj_names:
+        first_part = fn.split('.')[0]
+        new_name = first_part + '_0000.nii.gz'
+        os.rename(os.path.join(folder, fn), os.path.join(folder, new_name))
 
-curr_folder = os.getcwd()
-myo_folder = os.path.join(curr_folder, 'train\\myo')
-aankleuring_folder = os.path.join(curr_folder, 'train\\aankleuring')
-LGE_folder_orig = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis'
-LGE_folder_target = os.path.join(curr_folder, 'train\\LGE_niftis')
+def remove_zeros_from_filename(folder):
+    obj_names = next(os.walk(folder))[2]
+    for fn in obj_names:
+        new_name = f"{fn.split('_')[0]}_{fn.split('_')[1]}.nii.gz"
+        os.rename(os.path.join(folder, fn), os.path.join(folder, new_name))
+
+# curr_folder = os.getcwd()
+# myo_folder = os.path.join(curr_folder, 'train\\myo')
+# aankleuring_folder = os.path.join(curr_folder, 'train\\aankleuring')
+# LGE_folder_orig = 'L:\\basic\\diva1\\Onderzoekers\\DEEP-RISK\\DEEP-RISK\\CMR DICOMS\\Roel&Floor\\sample_niftis'
+# LGE_folder_target = os.path.join(curr_folder, 'train\\LGE_niftis')
 # rename_files(aankleuring_folder)
-patids = get_patids(myo_folder)
-uitzonderingen = ['DRAUMC0008', 'DRAUMC0219', 'DRAUMC0235', 'DRAUMC0315', 'DRAUMC0365', 'DRAUMC0380', 'DRAUMC0588']
+# patids = get_patids(myo_folder)
+# uitzonderingen = ['DRAUMC0008', 'DRAUMC0219', 'DRAUMC0235', 'DRAUMC0315', 'DRAUMC0365', 'DRAUMC0380', 'DRAUMC0588']
 # copy_niftis(patids, LGE_folder_orig, LGE_folder_target, uitzonderingen)
 # remove_cycle_duplicates(LGE_folder_target)
-create_test_files_and_move(patids, 7, curr_folder)
+# create_test_files_and_move(patids, 7, curr_folder)
 
+# add_zeros_to_filename('nnUNet/nnUNet_raw_data_base/nnUNet_raw_data/Task500_MyocardSegmentation/labelsTr')
+# add_zeros_to_filename('nnUNet/nnUNet_raw_data_base/nnUNet_raw_data/Task500_MyocardSegmentation/labelsTs')
+remove_zeros_from_filename('nnUNet/nnUNet_raw_data_base/nnUNet_raw_data/Task500_MyocardSegmentation/labelsTr')
+remove_zeros_from_filename('nnUNet/nnUNet_raw_data_base/nnUNet_raw_data/Task500_MyocardSegmentation/labelsTs')
